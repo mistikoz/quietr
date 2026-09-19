@@ -77,18 +77,32 @@
     background:rgba(0,30,50,.6);text-shadow:0 0 6px rgba(0,229,255,.35)}
   .ph .led{width:6px;height:6px;border-radius:50%;background:var(--ok);margin-right:8px;box-shadow:0 0 8px var(--ok);
     animation:pulse 1.2s infinite alternate}
-  .pb{padding:8px 10px;font:11px/1.5 Share Tech Mono;height:calc(100% - 26px);overflow:hidden;
-    letter-spacing:.02em}
-  .pb .big{font:800 30px/1 Orbitron,sans-serif;letter-spacing:.08em;color:var(--line);margin:2px 0 8px;
-    text-shadow:0 0 14px rgba(0,229,255,.55),0 0 2px #fff;animation:numFlick 60s steps(12) infinite}
-  .pb .row{white-space:nowrap;overflow:hidden;height:17px;animation:rowSlide 60s linear infinite}
-  .pb .row:nth-child(odd){animation-duration:52s}
-  .pb .row:nth-child(3n){animation-duration:68s;animation-direction:reverse}
-  .pb .row em{font-style:normal;color:var(--mute);margin-right:6px}
-  .pb.scrollY{position:relative}
-  .pb.scrollY .scrollInner{animation:vertScroll 60s linear infinite}
+  .pb{padding:8px 10px;font:12px/1.2 Share Tech Mono;height:calc(100% - 26px);overflow:hidden;
+    letter-spacing:.02em;display:flex;flex-direction:column;gap:0;min-height:0}
+  .pb .big{font:800 28px/1 Orbitron,sans-serif;letter-spacing:.08em;color:var(--line);margin:0 0 8px;
+    text-shadow:0 0 14px rgba(0,229,255,.55),0 0 2px #fff;animation:numFlick 60s steps(12) infinite;
+    flex:0 0 auto}
+  .pb .feed{flex:1 1 auto;min-height:0;overflow:hidden;position:relative;mask-image:linear-gradient(180deg,#000 85%,transparent)}
+  .pb .feedTrack{display:flex;flex-direction:column;gap:3px;will-change:transform;
+    animation:feedUp 24s linear infinite}
+  .pb .feedTrack.reverse{animation-name:feedDown;animation-duration:32s}
+  .pb .feedTrack.slow{animation-duration:40s}
+  .pb .row{display:grid;grid-template-columns:68px minmax(0,1fr) auto;align-items:center;gap:8px;
+    height:22px;min-height:22px;max-height:22px;line-height:22px;white-space:nowrap;overflow:hidden;
+    flex:0 0 22px}
+  .pb .row.plain{grid-template-columns:52px minmax(0,1fr)}
+  .pb .row .sym{color:var(--mute);overflow:hidden;text-overflow:ellipsis;font-size:11px}
+  .pb .row .nm{color:var(--ink);overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .pb .row .rug,.pb .row .val{color:var(--warn);justify-self:end;font-variant-numeric:tabular-nums}
+  .pb .row em{font-style:normal;color:var(--mute);margin-right:0;overflow:hidden;text-overflow:ellipsis}
+  .pb .crawlLine{flex:0 0 auto;height:18px;overflow:hidden;margin-top:6px;border-top:1px solid rgba(30,200,255,.2);padding-top:4px}
+  .pb .crawlLine span{display:inline-block;white-space:nowrap;padding-left:100%;animation:marquee 28s linear infinite;color:var(--mute);font-size:10px;letter-spacing:.08em}
+  .pb .row .val.up,.pb .row .nm.up{color:var(--ok)}
+  .pb .row .val.dn,.pb .row .nm.dn{color:var(--bad)}
+  .pb .row .nm.am,.pb .row .rug{color:var(--warn)}
   .up{color:var(--ok)}.dn{color:var(--bad)}.am{color:var(--warn)}
   .sharp{text-shadow:0 0 1px currentColor,0 0 8px rgba(0,229,255,.35);filter:contrast(1.12) saturate(1.15)}
+  #radar.pb .row{grid-template-columns:72px minmax(0,1fr) 58px}
   #colL{left:20px;top:90px;width:300px;height:640px;display:flex;flex-direction:column;gap:10px;position:absolute;z-index:8}
   #colR{right:20px;top:90px;width:300px;height:640px;display:flex;flex-direction:column;gap:10px;position:absolute;z-index:8}
   #colL .frame,#colR .frame{position:relative;flex:1;width:100%}
@@ -126,8 +140,8 @@
   @keyframes phaseCrawl{0%{opacity:.55;letter-spacing:.28em} 50%{opacity:1;letter-spacing:.4em} 100%{opacity:.6;letter-spacing:.28em}}
   @keyframes metaPulse{0%,100%{opacity:.75} 50%{opacity:1}}
   @keyframes numFlick{0%,92%,100%{opacity:1;transform:translateX(0)} 93%{opacity:.4;transform:translateX(1px)} 94%{opacity:1;transform:translateX(-1px)} 96%{opacity:.7}}
-  @keyframes rowSlide{0%{transform:translateX(0)} 25%{transform:translateX(3px)} 50%{transform:translateX(0)} 75%{transform:translateX(-2px)} 100%{transform:translateX(0)}}
-  @keyframes vertScroll{0%{transform:translateY(0)} 100%{transform:translateY(-40%)}}
+  @keyframes feedUp{0%{transform:translateY(0)} 100%{transform:translateY(-50%)}}
+  @keyframes feedDown{0%{transform:translateY(-50%)} 100%{transform:translateY(0)}}
   @keyframes statusBlink{0%,97%,100%{opacity:1} 98%{opacity:.35} 99%{opacity:1}}
   @keyframes barPulse{0%,100%{width:28%} 50%{width:78%}}
 </style>
@@ -445,26 +459,39 @@ function setBusy(on) {
   $('btnReplay').disabled = on;
 }
 
+function feedBlock(rowsHtml, trackClass = '') {
+  const body = rowsHtml || '<div class="row plain"><em>—</em><span class="nm am">empty</span></div>';
+  return `<div class="feed"><div class="feedTrack ${trackClass}">${body}${body}</div></div>`;
+}
+
+function mintRow(m) {
+  const sym = (m.symbol || '').slice(0, 6);
+  const full = m.name || sym;
+  const showName = full.toUpperCase() === sym.toUpperCase() ? '·' : full;
+  return `<div class="row"><span class="sym">${sym}</span><span class="nm">${showName}</span><span class="rug">rug ${m.rugScore}</span></div>`;
+}
+
 function paintRules() {
-  $('rules').innerHTML = `
-    <div class="row"><em>VER</em>${rules.version}</div>
-    <div class="row"><em>DUMP</em>≥ ${rules.dump.minDropPct}% early bleed</div>
-    <div class="row"><em>VOL</em>≤ ${fmt(rules.silence.volCollapse * 100, 0)}% of dump avg</div>
-    <div class="row"><em>SPR</em>≤ ${rules.silence.maxSpreadBps} bps</div>
-    <div class="row"><em>HOLD</em>${rules.silence.holdBars} quiet bars</div>
-    <div class="row"><em>LIFT</em>+${rules.entry.secondLegLiftPct}% second leg</div>
-    <div class="row"><em>EXIT</em>+${rules.exit.takePct}% / ${rules.exit.cutPct}%</div>
-    <div class="bar"><i style="width:${Math.min(100, rules.silence.holdBars * 22)}%"></i></div>
-    <div class="row am">less candle-one bleed</div>`;
+  const rows = `
+    <div class="row plain"><em>VER</em><span class="nm">${rules.version}</span></div>
+    <div class="row plain"><em>DUMP</em><span class="nm">≥ ${rules.dump.minDropPct}% early bleed</span></div>
+    <div class="row plain"><em>VOL</em><span class="nm">≤ ${fmt(rules.silence.volCollapse * 100, 0)}% of dump avg</span></div>
+    <div class="row plain"><em>SPR</em><span class="nm">≤ ${rules.silence.maxSpreadBps} bps</span></div>
+    <div class="row plain"><em>HOLD</em><span class="nm">${rules.silence.holdBars} quiet bars</span></div>
+    <div class="row plain"><em>LIFT</em><span class="nm">+${rules.entry.secondLegLiftPct}% second leg</span></div>
+    <div class="row plain"><em>EXIT</em><span class="nm">+${rules.exit.takePct}% / ${rules.exit.cutPct}%</span></div>
+    <div class="row plain"><em>EDGE</em><span class="nm am">less candle-one bleed</span></div>`;
+  $('rules').innerHTML = feedBlock(rows, 'slow');
   $('pack').textContent = rules.version;
-  $('gates').innerHTML = `
-    <div class="big">SILENCE</div>
-    <div class="row"><em>01</em>detect dump ≥ ${rules.dump.minDropPct}%</div>
-    <div class="row"><em>02</em>collapse volume</div>
-    <div class="row"><em>03</em>spread ok ≤ ${rules.silence.maxSpreadBps}bps</div>
-    <div class="row"><em>04</em>hold ${rules.silence.holdBars} bars</div>
-    <div class="row"><em>05</em>enter on lift</div>
-    <div class="row am">no first-candle chase</div>`;
+  const gateRows = `
+    <div class="row plain"><em>01</em><span class="nm">detect dump ≥ ${rules.dump.minDropPct}%</span></div>
+    <div class="row plain"><em>02</em><span class="nm">collapse volume</span></div>
+    <div class="row plain"><em>03</em><span class="nm">spread ok ≤ ${rules.silence.maxSpreadBps}bps</span></div>
+    <div class="row plain"><em>04</em><span class="nm">hold ${rules.silence.holdBars} bars</span></div>
+    <div class="row plain"><em>05</em><span class="nm">enter on lift</span></div>
+    <div class="row plain"><em>XX</em><span class="nm am">no first-candle chase</span></div>`;
+  $('gates').innerHTML = `<div class="big">SILENCE</div>${feedBlock(gateRows, 'reverse')}
+    <div class="crawlLine"><span>VOL COLLAPSE · SPREAD OK · HOLD BARS · SECOND WAVE · SOL · </span></div>`;
 }
 
 function setPipe(phase) {
@@ -483,33 +510,38 @@ function paint(run, contrast) {
   if (contrast) {
     const d = contrast.chase.avgPnlPct - contrast.quietr.avgPnlPct;
     $('bleed').textContent = `${d > 0 ? '−' : '+'}${fmt(Math.abs(d), 1)}%`;
-    $('contrast').innerHTML = `
-      <div class="big">${d > 0 ? 'LESS' : 'CHECK'} BLEED</div>
-      <div class="row"><em>quietr</em><span class="up">${fmt(contrast.quietr.avgPnlPct, 1)}%</span></div>
-      <div class="row"><em>chase1</em><span class="dn">${fmt(contrast.chase.avgPnlPct, 1)}%</span></div>
-      <div class="row"><em>delta</em><span class="am">${fmt(contrast.bleedDelta, 1)}%</span></div>
-      <div class="row"><em>avoid</em>${s.chaseAvoid} skips</div>
-      <div class="row am">second-leg > candle-one</div>`;
+    const cRows = `
+      <div class="row plain"><em>quietr</em><span class="nm up">${fmt(contrast.quietr.avgPnlPct, 1)}%</span></div>
+      <div class="row plain"><em>chase1</em><span class="nm dn">${fmt(contrast.chase.avgPnlPct, 1)}%</span></div>
+      <div class="row plain"><em>delta</em><span class="nm am">${fmt(contrast.bleedDelta, 1)}%</span></div>
+      <div class="row plain"><em>avoid</em><span class="nm">${s.chaseAvoid} skips</span></div>
+      <div class="row plain"><em>edge</em><span class="nm am">second-leg > candle-one</span></div>`;
+    $('contrast').innerHTML = `<div class="big">${d > 0 ? 'LESS' : 'CHECK'} BLEED</div>${feedBlock(cRows)}
+      <div class="crawlLine"><span>CHASE BLEED CHECK · QUIETR VS CANDLE-ONE · </span></div>`;
   }
-  $('score').innerHTML = `
-    <div class="big">${fmt(s.expectancy, 4)}</div>
-    <div class="row"><em>E SOL</em>per trade</div>
-    <div class="row"><em>traded</em>${s.traded}/${s.n}</div>
-    <div class="row"><em>wins</em><span class="up">${s.wins}</span></div>
-    <div class="row"><em>avg</em>${fmt(s.avgPnlPct, 1)}%</div>
-    <div class="row"><em>pnl</em><span class="${s.pnlSol >= 0 ? 'up' : 'dn'}">${fmt(s.pnlSol, 3)}</span></div>`;
+  const sRows = `
+    <div class="row plain"><em>E SOL</em><span class="nm">per trade</span></div>
+    <div class="row plain"><em>traded</em><span class="nm">${s.traded}/${s.n}</span></div>
+    <div class="row plain"><em>wins</em><span class="nm up">${s.wins}</span></div>
+    <div class="row plain"><em>avg</em><span class="nm">${fmt(s.avgPnlPct, 1)}%</span></div>
+    <div class="row plain"><em>pnl</em><span class="nm ${s.pnlSol >= 0 ? 'up' : 'dn'}">${fmt(s.pnlSol, 3)}</span></div>`;
+  $('score').innerHTML = `<div class="big">${fmt(s.expectancy, 4)}</div>${feedBlock(sRows, 'reverse')}
+    <div class="crawlLine"><span>SECOND-LEG PRINTS · LIVE SCORE · SOL · </span></div>`;
 
-  const pool = tape ? splitYdayToday(tape).today.slice(-10) : [];
-  $('radar').innerHTML = `<div class="big">${pool.length || '—'} SOL</div><div class="scrollInner">` +
-    pool.map((m) => `<div class="row"><em>${m.symbol}</em>${m.name} <span class="am">rug ${m.rugScore}</span></div>`).join('') +
-    `</div>`;
-  $('radar').classList.add('scrollY');
+  const pool = tape ? splitYdayToday(tape).today.slice(-12) : [];
+  const mintRows = pool.map(mintRow).join('');
+  $('radar').innerHTML = `<div class="big">${pool.length || '—'} SOL</div>${feedBlock(mintRows)}
+    <div class="crawlLine"><span>MINT RADAR · SOL POOL · RUG SCAN · </span></div>`;
 
-  $('log').innerHTML = run.results.slice(-12).reverse().map((r) => {
-    if (!r.entry) return `<div class="row"><em>skip</em>${r.name} <span class="am">${r.status}</span></div>`;
+  const logRows = run.results.slice(-14).reverse().map((r) => {
+    if (!r.entry) {
+      return `<div class="row"><span class="sym">skip</span><span class="nm">${r.name}</span><span class="rug am">${r.status}</span></div>`;
+    }
     const cls = r.pnlPct >= 0 ? 'up' : 'dn';
-    return `<div class="row"><em>${r.exit?.reason || '—'}</em>${r.name} <span class="${cls}">${r.pnlPct >= 0 ? '+' : ''}${fmt(r.pnlPct, 1)}%</span></div>`;
-  }).join('') || '<div class="row am">empty</div>';
+    const pct = `${r.pnlPct >= 0 ? '+' : ''}${fmt(r.pnlPct, 1)}%`;
+    return `<div class="row"><span class="sym">${r.exit?.reason || '—'}</span><span class="nm">${r.name}</span><span class="val ${cls}">${pct}</span></div>`;
+  }).join('');
+  $('log').innerHTML = feedBlock(logRows, 'slow');
 
   const hit = run.results.filter((r) => r.entry).slice(-1)[0];
   if (hit && tape) {
@@ -590,10 +622,10 @@ $('crawl2').textContent = '  IGNORE CANDLE ONE · HOLD SILENCE · ENTER LEG 2 ·
 $('crawl3').textContent = '  less bleed · more prints · pump.fun · vibelancer ·  '.repeat(5);
 
 paintRules();
-$('radar').innerHTML = '<div class="big">IDLE SOL</div><div class="row am">press RUN DEMO</div>';
-$('score').innerHTML = '<div class="big">—</div><div class="row am">no lock</div>';
-$('contrast').innerHTML = '<div class="big">—</div><div class="row am">vs chase pending</div>';
-$('log').innerHTML = '<div class="row am">empty</div>';
+$('radar').innerHTML = `<div class="big">IDLE SOL</div>${feedBlock('<div class="row plain"><em>—</em><span class="nm am">press RUN DEMO</span></div>')}`;
+$('score').innerHTML = `<div class="big">—</div>${feedBlock('<div class="row plain"><em>—</em><span class="nm am">no lock</span></div>')}`;
+$('contrast').innerHTML = `<div class="big">—</div>${feedBlock('<div class="row plain"><em>—</em><span class="nm am">vs chase pending</span></div>')}`;
+$('log').innerHTML = feedBlock('<div class="row plain"><em>—</em><span class="nm am">empty</span></div>');
 setPipe(0);
 
 let t0 = performance.now();
