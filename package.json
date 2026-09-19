@@ -1,0 +1,16 @@
+{
+  "name": "quietr",
+  "version": "0.1.0",
+  "private": false,
+  "description": "QUIETR — wait for silence after first dump, enter second wave on pump.fun",
+  "type": "module",
+  "scripts": {
+    "demo": "node src/cli.mjs demo",
+    "calibrate": "node src/cli.mjs calibrate",
+    "replay": "node src/cli.mjs replay",
+    "json": "node src/cli.mjs json",
+    "desk": "npx --yes serve . -p 5180"
+  },
+  "license": "MIT",
+  "engines": { "node": ">=18" }
+}
