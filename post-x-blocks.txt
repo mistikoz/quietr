@@ -1,0 +1,28 @@
+this is more useful than my entire degree
+
+i built quietr last night for pump.fun on sol.
+not another first-candle bot.
+
+turns out the print is after silence.
+dump hits. volume collapses. spread stays clean.
+then the second leg lifts. that is the entry.                           
+quietr is a targeting hud + tape engine.
+ignore candle one. arm on dump. hold quiet bars.
+enter leg two. calibrate yesterday. ship today.
+
+3 moves:
+1. npm run desk - open the 1920 lock board
+2. run demo once on paper tape (safe to get wrong)
+3. npm run calibrate - write data/next-rules.json
+
+the uncomfortable part:
+chase-first averaged ~5% on the same tape.
+quietr held ~40% on second-leg prints.
+n=30. less bleed. more leg two.
+
+limits: paper only. no wallet keys. sol desk.
+60s hud cycle. mistikoz/quietr.
+
+bookmark this
+save this, then open the piece below:
+↓
