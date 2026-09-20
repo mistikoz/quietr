@@ -61,14 +61,15 @@ Desk buttons (**RUN DEMO / CALIBRATE / REPLAY**) call the same engine as the CLI
 
 ## Visual
 
-AJDesign-style **targeting HUD** on a 60-second loop:
+Dark **biometric eye** lock (phosphor green) on a 60s loop:
 
-- VIBELANCER + PUMP.FUN frames sit **above** the QUIETR lock title  
-- Under the title: waveform + orbit blips + triple crawl tape  
-- Rotating ticks, radar sweep, lock brackets, scanlines, path trace  
-- Side panels keep text in motion (row slide · number flick · vertical radar scroll)
+- Eye sits dead center — iris spokes, scan sweep, lock brackets  
+- **SOL counter** lives in the pupil (expectancy live-tween)  
+- Six terminals **orbit** the eye (radar · gates · second-leg · bleed · log · rules)  
+- Terminal chrome matches the eye color  
+- Brands on the bar: **QUIETR** · **VIBELANCER** · **PUMP.FUN**
 
-Labels: **QUIETR** · **VIBELANCER** · **PUMP.FUN** · **SOL**
+Ref energy: biometric eye-scan HUD / dark terminal orbit desk.
 
 ---
 
